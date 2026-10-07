@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% set active = "history" %}
+{% block title_key %}meta.title.history{% endblock %}
+{% block content %}
+<section class="pt-12 md:pt-16" aria-label="History">
+  <div class="section-stamp">
+    <span class="no">HISTORY</span>
+    <span class="tag" data-i18n="hi.tag">LOCAL SCAN LOG</span>
+  </div>
+  <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="hi.title">Scan history.</h2>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="hi.sub">Kept in this browser only. Clearing site data erases it.</p>
+  <div class="diff-scroll mt-6">
+    <table class="heat-table" aria-label="Scan history">
+      <thead>
+        <tr>
+          <th data-i18n="hi.date">Date</th>
+          <th data-i18n="hi.file">File</th>
+          <th style="text-align: right;" data-i18n="hi.findings">Findings</th>
+          <th data-i18n="hi.risk">Risk</th>
+          <th data-i18n="hi.output">Output</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+  <p id="historyEmpty" class="mono text-[12px] mt-3 hidden" style="color: var(--faint)" data-i18n="hi.empty">No scans yet. Select a file to begin a local scan.</p>
+  <p class="mt-6 flex flex-wrap gap-3">
+    <a href="/scan" class="btn btn-primary" data-i18n="act.newscan">Yeni tarama</a>
+    <button id="clearHistoryBtn" type="button" class="btn" data-i18n="hi.clear">Geçmişi temizle</button>
+  </p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+<script>
+(function () {
+  function T(k, v) { return window.NukeI18n ? window.NukeI18n.t(k, v) : k; }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmtDate(iso) {
+    try {
+      var d = new Date(iso);
+      var months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+      return ("0" + d.getDate()).slice(-2) + " " + months[d.getMonth()] + " " + d.getFullYear();
+    } catch (e) { return iso; }
+  }
+  function render() {
+    var body = document.getElementById("historyBody");
+    var empty = document.getElementById("historyEmpty");
+    var h = [];
+    try { h = JSON.parse(localStorage.getItem("nukepii_history") || "[]"); } catch (e) {}
+    body.innerHTML = "";
+    if (!h.length) { empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
+    h.forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="col-name">' + esc(fmtDate(r.date)) + "</td>" +
+        '<td class="col-name">' + esc(r.file) + "</td>" +
+        '<td class="col-count">' + r.findings + "</td>" +
+        '<td><span class="risk-tag">' + esc(r.risk) + "</span></td>" +
+        '<td><span class="risk-tag" style="color: var(--accent);">' + esc(T("hi.ready")) + "</span></td>";
+      body.appendChild(tr);
+    });
+  }
+  document.getElementById("clearHistoryBtn").addEventListener("click", function () {
+    try { localStorage.removeItem("nukepii_history"); } catch (e) {}
+    render();
+  });
+  render();
+})();
+</script>
+{% endblock %}

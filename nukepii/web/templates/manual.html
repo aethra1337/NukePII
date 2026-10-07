@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set active = "manual" %}
+{% block title_key %}meta.title.manual{% endblock %}
+{% block content %}
+<section class="pt-12 md:pt-16" aria-label="Manual">
+  <div class="section-stamp">
+    <span class="no">MANUAL</span>
+    <span class="tag" data-i18n="man.tag">USER GUIDE</span>
+  </div>
+  <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="man.title">Kullanım kılavuzu.</h2>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="man.sub">Taramadan dışa aktarmaya tüm akış, komutlar ve kısayollar.</p>
+
+  <div class="card p-5 md:p-6 mt-8">
+    <p class="tech-tag" data-i18n="man.s1t">01 — TARA</p>
+    <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="man.s1d">Scan sayfasına dosyayı sürükle-bırak veya seç. Mod, bölge ve salt değerini ayarla, Dosyayı tara düğmesine bas (kısayol: S). Tarama bitince rapor otomatik açılır.</p>
+  </div>
+
+  <div class="card p-5 md:p-6 mt-4">
+    <p class="tech-tag" data-i18n="man.s2t">02 — İNCELE</p>
+    <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="man.s2d">Analysis sayfasında risk skorunu, türe göre bulguları, etkilenen alanları ve maskeli önizlemeyi görürsün. Kısayollar: N yeni tarama, C temiz satırları kopyala, E JSON indir.</p>
+  </div>
+
+  <div class="card p-5 md:p-6 mt-4">
+    <p class="tech-tag" data-i18n="man.s3t">03 — TEMİZLE</p>
+    <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="man.s3d">Clean sayfasında stratejini seç: maskeleme yapıyı korur, redaksiyon siler, hash ve takma ad birleştirmeleri çalışır tutar. Deterministik çıktı için salt gir.</p>
+  </div>
+
+  <div class="card p-5 md:p-6 mt-4">
+    <p class="tech-tag" data-i18n="man.s4t">04 — DIŞA AKTAR</p>
+    <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="man.s4d">Export sayfasından temiz dosyayı ve JSON denetim raporunu indir, özeti panoya kopyala. Geçmiş ve ayarlar yalnızca bu tarayıcıda tutulur.</p>
+  </div>
+
+  <div class="card p-5 md:p-6 mt-4">
+    <p class="tech-tag" data-i18n="man.clit">KOMUT SATIRI</p>
+    <pre class="diff-pane mt-3">nukepii scan --file veri.csv
+nukepii scan --file veri.csv --region TR --mode mask
+nukepii clean --file veri.csv --mode mask
+nukepii clean --file veri.csv --mode hash --salt 9f2k-sirket-2026
+nukepii engines</pre>
+    <p class="mt-3 text-[13px]" style="color: var(--faint)" data-i18n="man.clid">Çıktı varsayılan olarak &lt;dosya&gt;.nukepii.&lt;uzantı&gt; adıyla yazılır.</p>
+  </div>
+
+  <div class="card p-5 md:p-6 mt-4">
+    <p class="tech-tag" data-i18n="man.limit">SINIRLAR</p>
+    <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="man.limitd">En fazla 256 MB dosya. Önizleme ilk bulgulu satırlarla sınırlıdır; raporda kısaltma belirtilir. Büyük taramalarda sayımlar dosyanın tamamını kapsar.</p>
+  </div>
+
+  <p class="mt-6 flex flex-wrap gap-3">
+    <a href="/scan" class="btn btn-primary"><span data-i18n="guide.cta.scan">Dosya tara</span><span aria-hidden="true"> →</span></a>
+    <a href="/faq" class="btn">FAQ</a>
+  </p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+{% endblock %}

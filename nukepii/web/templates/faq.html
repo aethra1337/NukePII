@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set active = "faq" %}
+{% block title_key %}meta.title.faq{% endblock %}
+{% block content %}
+<section class="pt-12 md:pt-16" aria-label="FAQ">
+  <div class="section-stamp">
+    <span class="no">FAQ</span>
+    <span class="tag" data-i18n="faq.tag">QUESTIONS</span>
+  </div>
+  <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="faq.title">Sık sorulan sorular.</h2>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)"><span data-i18n="faq.sub">Cevabı bulamazsan bak:</span> <a href="/manual" class="underline" data-i18n="faq.manual">kullanım kılavuzu</a></p>
+
+  <div class="mt-8 flex flex-col gap-3">
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q1t">Verilerim nereye gidiyor?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q1d">Hiçbir yere. NukePII %100 yerel çalışır: dosya bu makinede okunur, taranır ve temizlenir. Dış sunucuya tek bayt bile gitmez.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q2t">Hangi dosya türleri destekleniyor?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q2d">CSV, JSON, JSONL, SQL, LOG, TXT ve MD. En fazla 256 MB. Büyük dosyalar parça parça okunur, bellek şişmez.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q3t">Ham verim ekranda görünür mü?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q3d">Hayır. Önizleme varsayılan olarak maskelidir ve ham PII motordan çıkmaz. Ham önizleme yalnızca NUKEPII_ALLOW_RAW=1 ayarlıysa açılır.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q4t">Hangi temizleme modunu seçmeliyim?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q4d">Yapıyı korumak için maskeleme, tamamen silmek için redaksiyon, birleştirmeler için hash veya takma ad, sayısal sütunları yumuşatmak için gürültü. Kararsızsan maskeleme ile başla.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q5t">Salt ne işe yarar?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q5d">Hash ve takma ad modlarında aynı girdiye her seferinde aynı çıktıyı verir. Farklı taramalarda tutarlılık gerekiyorsa aynı salt değerini tekrar kullan.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q6t">Bölge filtresi ne yapar?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q6d">23 bölge arasından taranacak kimlik türlerini daraltır. ALL seçiliyken 80 dedektörün tamamı çalışır; e-posta, kart, IP ve API anahtarları her zaman globaldir.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q7t">Geçmişim nerede saklanıyor?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q7d">Yalnızca bu tarayıcıda (localStorage). Site verisini silersen kayıtlar gider. Sunucuda hiçbir iz tutulmaz.</p>
+    </details>
+    <details class="card p-5">
+      <summary class="font-medium text-[15px] cursor-pointer" data-i18n="faq.q8t">Komut satırından kullanabilir miyim?</summary>
+      <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="faq.q8d">Evet: nukepii scan --file veri.csv ile tara, nukepii clean --file veri.csv --mode mask ile temizle. Detaylar kullanım kılavuzunda.</p>
+    </details>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+{% endblock %}

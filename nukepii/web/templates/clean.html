@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% set active = "clean" %}
+{% block title_key %}meta.title.clean{% endblock %}
+{% block content %}
+<div id="emptyState" class="card empty-drop p-10 mt-4 text-center hidden">
+  <h1 class="font-semibold text-[18px] mt-4" data-i18n="empty.t">Yüklenmiş rapor yok</h1>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="empty.d">Dosya seçtikten sonra tarama sonucu burada görünür.</p>
+  <p class="mt-4"><a href="/scan" class="btn btn-primary" data-i18n="empty.cta">Dosya tara</a></p>
+</div>
+
+<div id="cleanGrid" class="hidden" style="display: none;">
+  <section class="mt-10" id="clean" aria-label="Clean">
+    <div class="section-stamp">
+      <span class="no">04 / CLEAN</span>
+      <span class="tag" data-i18n="cl.tag">SANITIZATION WORKSPACE</span>
+    </div>
+    <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="cl.title">Make it safe.</h2>
+    <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="cl.sub">Choose how detected data should be transformed.</p>
+    <p class="mono mt-2 text-[12px]" style="color: var(--faint)" id="wsFile">—</p>
+    <div class="grid gap-2 mt-5" id="modeRows" role="radiogroup" aria-label="Cleaning mode">
+      <button type="button" class="opt-row" data-mode="mask" role="radio" aria-checked="true"><span class="idx">01</span><span><span class="t">MASK</span><span class="d block" data-i18n="cl.m.mask">Preserve structure while hiding sensitive characters.</span></span></button>
+      <button type="button" class="opt-row" data-mode="hash" role="radio" aria-checked="false"><span class="idx">02</span><span><span class="t">HASH</span><span class="d block" data-i18n="cl.m.hash">Generate deterministic hashes for repeatable workflows.</span></span></button>
+      <button type="button" class="opt-row" data-mode="redact" role="radio" aria-checked="false"><span class="idx">03</span><span><span class="t">REDACT</span><span class="d block" data-i18n="cl.m.redact">Remove sensitive values entirely.</span></span></button>
+      <button type="button" class="opt-row" data-mode="pseudonymize" role="radio" aria-checked="false"><span class="idx">04</span><span><span class="t">PSEUDONYMIZE</span><span class="d block" data-i18n="cl.m.pseudo">Replace values with consistent pseudonyms.</span></span></button>
+      <button type="button" class="opt-row" data-mode="noise" role="radio" aria-checked="false"><span class="idx">05</span><span><span class="t">NOISE</span><span class="d block" data-i18n="cl.m.noise">Apply controlled noise to supported numeric data.</span></span></button>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4 mt-5">
+      <div>
+        <p class="tech-tag" data-i18n="cl.region">REGION</p>
+        <div class="seg mt-2" id="regionSeg" role="group" aria-label="Region">
+          <button type="button" data-region="ALL" aria-pressed="true">ALL</button>
+          <button type="button" data-region="TR" aria-pressed="false">TR</button>
+          <button type="button" data-region="US" aria-pressed="false">US</button>
+          <button type="button" data-region="EU" aria-pressed="false">EU</button>
+          <button type="button" data-region="GB" aria-pressed="false">GB</button>
+          <button type="button" data-region="BR" aria-pressed="false">BR</button>
+          <button type="button" data-region="IN" aria-pressed="false">IN</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="saltField"><span data-i18n="cl.salt">SALT</span> <span style="color: var(--faint)" data-i18n="cl.optional">Optional</span></label>
+        <input id="saltField" type="text" autocomplete="off" spellcheck="false" placeholder="Enter salt" data-i18n="cl.salt.ph" />
+        <p class="text-[12px] mt-2" style="color: var(--faint)" data-i18n="cl.salt.d">Reuse the same salt when deterministic output is required across scans.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-10" id="export" aria-label="Export">
+    <div class="section-stamp">
+      <span class="no">05 / EXPORT</span>
+      <span class="tag">OUTPUT</span>
+    </div>
+    <div class="file-meta-grid mt-4" style="grid-template-columns: repeat(2, 1fr);">
+      <div><p class="k">INPUT</p><p class="v" id="exInput">—</p></div>
+      <div><p class="k">FINDINGS</p><p class="v" id="exFindings">—</p></div>
+      <div><p class="k">MODE</p><p class="v" id="exMode">—</p></div>
+      <div><p class="k">OUTPUT</p><p class="v" id="exOutput">—</p></div>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-4">
+      <button id="generateBtn" type="button" class="btn btn-primary"><span data-i18n="ex.generate">Generate clean file</span><span aria-hidden="true"> →</span></button>
+    </div>
+    <div id="exportReady" class="hidden mt-4 card p-4">
+      <p class="font-medium text-[14px]" data-i18n="ex.ready">Clean file ready</p>
+      <p class="mono text-[12px] mt-1" style="color: var(--muted)" id="exReadySub"></p>
+      <p class="mono text-[11px] mt-1" style="color: var(--faint)" data-i18n="ex.local">PROCESSING: LOCAL</p>
+      <button id="exportDownloadBtn" type="button" class="btn btn-primary mt-3" data-i18n="ex.download">Download clean file</button>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/workspace.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% set active = "detectors" %}
+{% block title_key %}meta.title.detectors{% endblock %}
+{% block content %}
+<section class="pt-12 md:pt-16" aria-label="Detectors">
+  <div class="section-stamp">
+    <span class="no">CATALOG</span>
+    <span class="tag" data-i18n="det.tag">DETECTION SURFACE</span>
+  </div>
+  <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="detcat.title">Detector catalog.</h2>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="detcat.sub">Regex candidates confirmed by checksum validators. Served live from the engine.</p>
+  <p class="mono mt-2 text-[12px]" style="color: var(--faint)" id="detCount">—</p>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-6" id="detGrid"></div>
+  <p class="mono mt-4 text-[12px]" style="color: var(--faint)" data-i18n="det.note">Regex candidates confirmed by checksum validators. No data leaves the machine.</p>
+  <div class="card p-5 mt-6">
+    <h3 class="font-medium text-[15px]" data-i18n="detcat.custom.t">Özel kurallar</h3>
+    <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="detcat.custom.d">Kendi regex kurallarını YAML/JSON ile tanımla, taramada bölge filtresiyle birlikte çalışır. Örnek: rules/custom.example.yaml</p>
+    <p class="mt-3"><a href="/scan" class="btn" data-i18n="guide.cta.scan">Dosya tara</a></p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+<script>
+(function () {
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  fetch("/api/v1/detectors")
+    .then(function (r) { return r.json(); })
+    .then(function (body) {
+      var grid = document.getElementById("detGrid");
+      var count = document.getElementById("detCount");
+      count.textContent = body.count + " detectors · severity 0-10";
+      (body.detectors || []).forEach(function (d) {
+        var cell = document.createElement("div");
+        cell.className = "det-cell";
+        cell.innerHTML =
+          '<p class="nm">' + esc(d.type) + "</p>" +
+          '<p class="text-[12px] mt-1" style="color: var(--muted)">' + esc(d.description) + "</p>" +
+          '<p class="mono text-[11px] mt-2" style="color: var(--faint)">' +
+          esc(d.region) + " · " + (d.compliance || []).join(",") + " · sev " + d.severity + "</p>";
+        grid.appendChild(cell);
+      });
+    })
+    .catch(function () {
+      document.getElementById("detCount").textContent = "catalog unavailable";
+    });
+})();
+</script>
+{% endblock %}

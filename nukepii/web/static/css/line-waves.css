@@ -1,0 +1,65 @@
+/* LineWaves background — fixed WebGL layer, content stays interactive. */
+#lineWavesBg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#lineWavesBg canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.85;
+}
+
+/* Readability veil above the waves, below content — a uniform dim layer
+   so text stays legible over bright wave areas, plus a bottom fade. */
+#lineWavesBg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(5, 8, 7, 0.62), rgba(5, 8, 7, 0.62)),
+    linear-gradient(to bottom, transparent 55%, var(--bg) 100%);
+  opacity: 1;
+}
+
+html.light #lineWavesBg::after {
+  background:
+    linear-gradient(to bottom, rgba(244, 247, 244, 0.72), rgba(244, 247, 244, 0.72)),
+    linear-gradient(to bottom, transparent 55%, var(--bg) 100%);
+}
+
+/* Text over the live background gets a soft shadow for contrast. */
+main h1,
+main h2,
+.heat-table th,
+.section-stamp .tag,
+.scan-readout {
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.65);
+}
+
+html.light main h1,
+html.light main h2,
+html.light .heat-table th,
+html.light .section-stamp .tag,
+html.light .scan-readout {
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7);
+}
+
+html.light #lineWavesBg canvas {
+  opacity: 0.45;
+}
+
+/* Lift app content above the fixed background. */
+body > header,
+body > main,
+body > footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* NOTE: the module always animates (site owner request); no
+   prefers-reduced-motion hide here. */

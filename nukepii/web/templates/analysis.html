@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% set active = "analysis" %}
+{% block title_key %}meta.title.dash{% endblock %}
+{% block head %}
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
+{% endblock %}
+{% block subbar %}
+<div class="max-w-6xl mx-auto px-6 py-2 flex items-center gap-3 flex-wrap" style="border-top: 1px solid var(--line);">
+  <span id="fileMeta" class="text-[13px] truncate mono" style="color: var(--muted)" data-i18n="dash.nofile">Dosya yüklenmedi</span>
+  <div class="ml-auto flex items-center gap-2 flex-wrap">
+    <span id="riskBadge" class="inline-flex items-center gap-2 text-[13px] font-medium px-3 py-1.5" style="border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);">
+      <span class="badge-dot" id="riskDot" style="background: var(--faint)"></span>
+      <span id="riskText" data-i18n="dash.norisk">Risk yok</span>
+    </span>
+    <a href="/scan" class="btn" data-i18n="act.newscan">Yeni tarama</a>
+    <a href="/clean" class="btn btn-primary" data-i18n="act.clean">Temiz dosyayı indir</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div id="truncBanner" class="banner hidden mt-4" role="status"></div>
+
+<div id="loadingState" class="card p-6 mt-4" aria-busy="true">
+  <div class="h-4 rounded w-1/3 animate-pulse" style="background: var(--surface-2)"></div>
+  <div class="h-4 rounded w-full mt-3 animate-pulse" style="background: var(--surface-2)"></div>
+  <div class="h-4 rounded w-2/3 mt-3 animate-pulse" style="background: var(--surface-2)"></div>
+</div>
+
+<div id="emptyState" class="card p-10 mt-4 text-center hidden">
+  <h1 class="font-semibold text-[18px] mt-4" data-i18n="empty.t">Yüklenmiş rapor yok</h1>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="empty.d">Dosya seçtikten sonra tarama sonucu burada görünür.</p>
+  <p class="mt-4"><a href="/scan" class="btn btn-primary" data-i18n="empty.cta">Dosya tara</a></p>
+</div>
+
+<div id="reportGrid" class="hidden mt-4" style="display: none;">
+  <div class="section-stamp">
+    <span class="no">03 / ANALYZE</span>
+    <span class="tag" data-i18n="an.tag">RESULTS</span>
+  </div>
+  <h2 class="font-semibold mt-5" style="font-size: clamp(30px, 4vw, 44px); letter-spacing: -0.02em;" data-i18n="an.title">What we found.</h2>
+  <section class="card flex flex-col md:flex-row mt-5" data-i18n-aria="sum.aria" aria-label="Özet">
+    <div class="kpi flex-1">
+      <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.risk">Risk skoru</p>
+      <p class="mt-1"><span id="kpiRiskScore" class="mono text-[26px] font-semibold">0</span><span class="text-[13px] ml-2" style="color: var(--muted)">/100</span></p>
+      <p id="kpiRiskLabel" class="text-[13px] mt-1" style="color: var(--muted)">Düşük</p>
+    </div>
+    <div class="kpi flex-1">
+      <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.det">Bulgu</p>
+      <p class="mt-1"><span id="kpiDetections" class="mono text-[26px] font-semibold">0</span></p>
+      <p id="kpiTypes" class="text-[13px] mt-1" style="color: var(--muted)">0 türde</p>
+    </div>
+    <div class="kpi flex-1">
+      <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.scan">Taranan</p>
+      <p class="mt-1"><span id="kpiUnits" class="mono text-[26px] font-semibold">0</span></p>
+      <p id="kpiUnitKind" class="text-[13px] mt-1" style="color: var(--muted)">satır</p>
+    </div>
+    <div class="kpi flex-1">
+      <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.comp">Uyum</p>
+      <div class="mt-2 flex gap-4 flex-wrap text-[13px]">
+        <span><span class="mono font-medium">GDPR</span> <span id="kpiGdpr" class="mono">0</span></span>
+        <span><span class="mono font-medium">KVKK</span> <span id="kpiKvkk" class="mono">0</span></span>
+        <span><span class="mono font-medium">CCPA</span> <span id="kpiCcpa" class="mono">0</span></span>
+        <span><span class="mono font-medium">LGPD</span> <span id="kpiLgpd" class="mono">0</span></span>
+        <span><span class="mono font-medium">HIPAA</span> <span id="kpiHipaa" class="mono">0</span></span>
+      </div>
+      <p class="text-[12px] mt-2" style="color: var(--faint)" data-i18n="kpi.comp.note">Kurallar örtüştüğünde sayımlar paylaşılır.</p>
+    </div>
+  </section>
+
+  <section class="grid gap-4 md:grid-cols-5 mt-4" style="align-items: stretch;">
+    <div class="card p-5 md:col-span-2 flex flex-col">
+      <h2 class="tech-tag" data-i18n="g.t">Risk skoru</h2>
+      <div class="flex items-end gap-5 mt-3">
+        <div>
+          <p class="mono font-bold" style="font-size: 34px; line-height: 1;"><span id="gaugeValue">0</span><span style="font-size: 15px; color: var(--muted);">/100</span></p>
+          <p id="kpiRiskLabelInline" class="mono text-[12px] mt-1" style="color: var(--muted)">—</p>
+        </div>
+        <div class="gauge-wrap" style="height: 96px; width: 150px; margin-top: 0;">
+          <canvas id="gaugeChart" data-i18n-aria="g.t" aria-label="Risk skoru göstergesi"></canvas>
+        </div>
+      </div>
+      <div class="risk-bar mt-3" aria-hidden="true"><div id="riskBarFill" style="width: 0%; background: var(--success);"></div></div>
+      <p class="text-[13px] mt-2" style="color: var(--muted)" data-i18n="g.d">Bulgu türü ve dosya boyutuna göre ağırlıklandırılır.</p>
+    </div>
+    <div class="card p-5 md:col-span-3">
+      <h2 class="font-medium text-[15px]" data-i18n="d.t">Türe göre bulgular</h2>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="d.d">Her tür kendi etiketi ve sayısıyla gösterilir.</p>
+      <div class="flex flex-col sm:flex-row gap-4 mt-3 items-center">
+        <div class="donut-wrap">
+          <canvas id="donutChart" data-i18n-aria="d.t" aria-label="Türe göre bulgu grafiği"></canvas>
+        </div>
+        <ul id="donutLegend" class="legend-scroll flex-1 w-full text-[13px]"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card p-5 mt-4" aria-label="Detections">
+    <div class="flex items-baseline gap-3 flex-wrap">
+      <h2 class="font-medium text-[15px]" data-i18n="dt.t">Detections</h2>
+      <span class="text-[13px]" style="color: var(--muted)" data-i18n="dt.sub">Type, matches, risk and action.</span>
+    </div>
+    <div class="diff-scroll mt-3">
+      <table class="heat-table" aria-label="Detections by type">
+        <thead>
+          <tr>
+            <th data-i18n="dt.h.type">Type</th>
+            <th style="text-align: right;" data-i18n="dt.h.matches">Matches</th>
+            <th data-i18n="dt.h.risk">Risk</th>
+            <th data-i18n="dt.h.action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="detectBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card p-5 mt-4">
+    <div class="flex items-baseline gap-3 flex-wrap">
+      <h2 class="font-medium text-[15px]" data-i18n="h.t">Nerede bulundu</h2>
+      <span id="heatKind" class="text-[13px]" style="color: var(--muted)"></span>
+    </div>
+    <div class="diff-scroll mt-3">
+      <table class="heat-table" aria-label="Column findings">
+        <thead>
+          <tr>
+            <th data-i18n="h.col">Column</th>
+            <th style="text-align: right;" data-i18n="h.matches">Matches</th>
+            <th data-i18n="h.level">Seviye</th>
+            <th data-i18n="h.risk">Risk</th>
+          </tr>
+        </thead>
+        <tbody id="heatmap"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card p-5 mt-4">
+    <div class="flex items-center gap-3 flex-wrap">
+      <div>
+        <h2 class="font-medium text-[15px]" data-i18n="p.t">Önizleme</h2>
+        <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="p.d">Bulgulu ilk satırlar. Sol tarafta orijinal, sağda temizlenmiş.</p>
+      </div>
+      <button id="copyCleanBtn" type="button" class="btn ml-auto" data-i18n="act.copy">Temiz satırları kopyala</button>
+    </div>
+    <div id="diffViewer" class="mt-4" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    <div class="mt-4 flex flex-wrap gap-2 items-center">
+      <a href="/clean" class="btn btn-primary" data-i18n="act.clean">Temiz dosyayı indir</a>
+      <button id="downloadJsonBtn" type="button" class="btn" data-i18n="act.json">JSON raporu indir</button>
+      <button id="copySummaryBtn" type="button" class="btn" data-i18n="act.sumcopy">Özeti kopyala</button>
+    </div>
+    <div class="mt-4">
+      <p class="sysline mono mt-1" data-i18n="kb.hint">Kısayollar: N yeni tarama, C temiz satırları kopyala, E JSON indir</p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

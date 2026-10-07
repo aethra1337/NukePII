@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="pageTitle" data-title-key="{% block title_key %}meta.title.index{% endblock %}">NukePII</title>
+  <script>
+    try {
+      var t = localStorage.getItem("nukepii_theme");
+      if (t === "light") {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
+      } else {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+      }
+      var l = localStorage.getItem("nukepii_lang");
+      document.documentElement.lang = (l === "en" || l === "tr") ? l : "tr";
+    } catch (e) {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}" />
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: "class" };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/line-waves.css') }}?v=2" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tech-text.css') }}?v=1" />
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+  <div id="lineWavesBg" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="max-w-6xl mx-auto px-6 py-3 flex items-center gap-5">
+        <a href="/" class="flex items-center gap-2.5" data-i18n-aria="aria.home" aria-label="NukePII ana sayfa">
+          <img src="{{ url_for('static', filename='img/apple-touch-icon.png') }}" width="56" height="56" alt="" class="brand-mark" />
+          <span class="brand-name text-[21px]">nuke<span class="brand-pii">PII</span></span>
+        </a>
+        <nav class="hidden md:flex items-center gap-5" aria-label="Sections">
+          <a href="/" class="nav-link {% if active == 'guide' %}active{% endif %}" data-i18n="nav.guide">GUIDE</a>
+          <a href="/scan" class="nav-link {% if active == 'scan' %}active{% endif %}" data-i18n="nav.scan">SCAN</a>
+          <a href="/analysis" class="nav-link {% if active == 'analysis' %}active{% endif %}" data-i18n="nav.analysis">ANALYSIS</a>
+          <a href="/clean" class="nav-link {% if active == 'clean' %}active{% endif %}" data-i18n="nav.clean">CLEAN</a>
+          <a href="/export" class="nav-link {% if active == 'export' %}active{% endif %}" data-i18n="nav.export">EXPORT</a>
+          <a href="/history" class="nav-link {% if active == 'history' %}active{% endif %}" data-i18n="nav.history">HISTORY</a>
+          <a href="/detectors" class="nav-link {% if active == 'detectors' %}active{% endif %}" data-i18n="nav.detectors">DETECTORS</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="local-pill"><span class="status-dot"></span><span data-i18n="nav.local">LOCAL</span></span>
+          <a href="/settings" class="nav-link hidden sm:inline {% if active == 'settings' %}active{% endif %}" data-i18n="nav.settings">SETTINGS</a>
+          <button id="langToggle" type="button" class="lang-switch" role="switch" aria-checked="false" aria-label="Dili değiştir" data-cur="tr">
+            <span class="lang-opt" data-lang="tr">TR</span>
+            <span class="lang-opt" data-lang="en">EN</span>
+            <span class="lang-knob" aria-hidden="true"></span>
+          </button>
+          <button id="themeToggle" type="button" class="theme-switch" aria-pressed="false" data-i18n-aria="aria.theme" aria-label="Renk temasını değiştir" data-mode="dark">
+            <span class="ts-icon ts-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" /><line x1="12" y1="1" x2="12" y2="4" /><line x1="12" y1="20" x2="12" y2="23" /><line x1="4.2" y1="4.2" x2="5.6" y2="5.6" /><line x1="18.4" y1="18.4" x2="19.8" y2="19.8" /><line x1="1" y1="12" x2="4" y2="12" /><line x1="20" y1="12" x2="23" y2="12" /><line x1="4.2" y1="19.8" x2="5.6" y2="18.4" /><line x1="18.4" y1="5.6" x2="19.8" y2="4.2" /></svg></span>
+            <span class="ts-icon ts-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg></span>
+            <span class="ts-knob" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      {% block subbar %}{% endblock %}
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 pb-16">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="mt-8" style="border-top: 1px solid var(--line)">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex flex-wrap gap-3 items-center">
+      <p class="text-[12px] mono" style="color: var(--faint)" data-i18n="foot.index" data-v-version="{{ version }}">NukePII v{{ version }} · Yalnızca yerel</p>
+      <p class="mono text-[11px] flex gap-4" style="color: var(--faint)">
+        <a href="/faq" class="hover:underline">FAQ</a>
+        <a href="/manual" class="hover:underline" data-i18n="man.title">Kullanım kılavuzu.</a>
+        <a href="/detectors" class="hover:underline" data-i18n="nav.detectors">DETECTORS</a>
+      </p>
+      <p class="mono ml-auto text-[11px]" style="color: var(--faint)">DROP → SCAN → ANALYZE → CLEAN → EXPORT</p>
+    </div>
+  </footer>
+
+  <div id="toastWrap" aria-live="polite"></div>
+  <script src="{{ url_for('static', filename='js/i18n.js') }}?v=6"></script>
+  {% block scripts %}{% endblock %}
+  <script type="importmap">
+    { "imports": { "ogl": "https://esm.sh/ogl@1.0.8" } }
+  </script>
+  <script type="module">
+    // LineWaves background. Always initialized: with reduced-motion the
+    // module renders a single static frame instead of animating.
+    try {
+      const mod = await import("{{ url_for('static', filename='js/line-waves.js') }}?v=3");
+      const el = document.getElementById('lineWavesBg');
+      if (el) {
+        mod.initLineWaves(el, {
+          speed: 0.3, innerLineCount: 32, outerLineCount: 36,
+          warpIntensity: 1.8, rotation: -137, edgeFadeWidth: 0.65,
+          colorCycleSpeed: 2.6, brightness: 0.2,
+          color1: '#0BAE55', color2: '#0E2F23', color3: '#10B981',
+          enableMouseInteraction: true, mouseInfluence: 1.7
+        });
+        el.dataset.waves = "on";
+      }
+    } catch (e) {
+      window.__lineWavesError = String(e && e.message || e);
+      const el = document.getElementById('lineWavesBg');
+      if (el) el.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

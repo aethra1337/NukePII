@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set active = "guide" %}
+{% block title_key %}meta.title.guide{% endblock %}
+{% block content %}
+<section class="pt-12 md:pt-16" aria-label="Guide">
+  <div class="section-stamp">
+    <span class="no">00 / GUIDE</span>
+    <span class="tag" data-i18n="guide.tag">HOW IT WORKS</span>
+  </div>
+  <h1 class="sr-only" data-i18n="guide.title">Find PII before someone else does.</h1>
+  <div id="techTextHero" class="tech-text" data-i18n-key="guide.title" role="img" aria-label="Find PII before someone else does."><canvas class="tech-text-canvas"></canvas></div>
+  <p class="mt-5 text-[15px] leading-relaxed" style="color: var(--muted); max-width: 52ch;" data-i18n="guide.desc">Scan sensitive files directly on this machine. Five steps, zero uploads — your data never leaves this host.</p>
+  <div class="flex flex-wrap gap-3 mt-6">
+    <a href="/scan" class="btn btn-primary"><span data-i18n="guide.cta.scan">Dosya tara</span><span aria-hidden="true"> →</span></a>
+    <a href="/analysis" class="btn" data-i18n="guide.cta.report">Son raporu aç</a>
+  </div>
+</section>
+
+<section class="mt-14" aria-label="Steps">
+  <div class="grid gap-3 md:grid-cols-5">
+    <a href="/scan" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">01 / DROP</p>
+      <p class="font-medium mt-2" data-i18n="guide.s1t">Dosyayı bırak</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="guide.s1d">CSV, JSON, SQL, LOG, TXT veya MD — en fazla 256 MB. Dosya bu makineden çıkmaz.</p>
+    </a>
+    <a href="/scan" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">02 / SCAN</p>
+      <p class="font-medium mt-2" data-i18n="guide.s2t">Tara</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="guide.s2d">Regex adayları bulur, sağlama doğrulayıcıları kimlik, kart ve IBAN'ları onaylar.</p>
+    </a>
+    <a href="/analysis" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">03 / ANALYZE</p>
+      <p class="font-medium mt-2" data-i18n="guide.s3t">Raporu incele</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="guide.s3d">Risk skoru, türe göre bulgular, etkilenen alanlar ve maskeli önizleme.</p>
+    </a>
+    <a href="/clean" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">04 / CLEAN</p>
+      <p class="font-medium mt-2" data-i18n="guide.s4t">Temizle</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="guide.s4d">Maskeleme, hash, redaksiyon veya takma ad seç. Salt ile deterministik çıktı.</p>
+    </a>
+    <a href="/export" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">05 / EXPORT</p>
+      <p class="font-medium mt-2" data-i18n="guide.s5t">Dışa aktar</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="guide.s5d">Temiz dosyayı ve JSON raporu indir. Geçmiş yalnızca bu tarayıcıda tutulur.</p>
+    </a>
+  </div>
+</section>
+
+<section class="mt-14" aria-label="Facts">
+  <div class="section-stamp">
+    <span class="no">FACTS</span>
+    <span class="tag" data-i18n="nav.localfirst">LOCAL-FIRST PII SCANNER</span>
+  </div>
+  <div class="grid grid-cols-3 gap-px mt-6" style="background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden;">
+    <div style="background: var(--surface); padding: 14px;"><p class="mono text-[20px] font-semibold">100%</p><p class="tech-tag mt-1" data-i18n="facts.local">LOCAL</p></div>
+    <div style="background: var(--surface); padding: 14px;"><p class="mono text-[20px] font-semibold">80</p><p class="tech-tag mt-1" data-i18n="facts.detectors">DETECTORS</p></div>
+    <div style="background: var(--surface); padding: 14px;"><p class="mono text-[20px] font-semibold">5</p><p class="tech-tag mt-1" data-i18n="facts.modes">CLEAN MODES</p></div>
+  </div>
+  <p class="mono mt-4 text-[12px]" style="color: var(--faint)" data-i18n="guide.note">Regex candidates confirmed by checksum validators. No data leaves the machine.</p>
+</section>
+
+<section class="mt-14" aria-label="Help">
+  <div class="section-stamp">
+    <span class="no">HELP</span>
+    <span class="tag" data-i18n="help.tag">FAQ / MANUAL</span>
+  </div>
+  <div class="grid gap-3 md:grid-cols-2 mt-6">
+    <a href="/faq" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">FAQ</p>
+      <p class="font-medium mt-2" data-i18n="faq.title">Sık sorulan sorular.</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="faq.q1t">Verilerim nereye gidiyor?</p>
+    </a>
+    <a href="/manual" class="step block">
+      <p class="mono text-[12px]" style="color: var(--accent)">MANUAL</p>
+      <p class="font-medium mt-2" data-i18n="man.title">Kullanım kılavuzu.</p>
+      <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="man.sub">Taramadan dışa aktarmaya tüm akış, komutlar ve kısayollar.</p>
+    </a>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/hero-text.js') }}?v=1"></script>
+{% endblock %}

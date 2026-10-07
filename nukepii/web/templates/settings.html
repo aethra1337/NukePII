@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% set active = "settings" %}
+{% block title_key %}meta.title.settings{% endblock %}
+{% block content %}
+<section class="pt-12 md:pt-16" aria-label="Settings">
+  <div class="section-stamp">
+    <span class="no">SETTINGS</span>
+    <span class="tag" data-i18n="set.general">GENERAL</span>
+  </div>
+  <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="set.title">Settings</h2>
+  <div class="card p-5 md:p-6 mt-6">
+    <p class="tech-tag" data-i18n="set.general">GENERAL</p>
+    <div class="modal-row"><span data-i18n="set.theme">Theme</span><button id="setThemeBtn" type="button" class="theme-switch" data-mode="dark" aria-label="Theme">
+      <span class="ts-icon ts-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" /><line x1="12" y1="1" x2="12" y2="4" /><line x1="12" y1="20" x2="12" y2="23" /><line x1="4.2" y1="4.2" x2="5.6" y2="5.6" /><line x1="18.4" y1="18.4" x2="19.8" y2="19.8" /><line x1="1" y1="12" x2="4" y2="12" /><line x1="20" y1="12" x2="23" y2="12" /><line x1="4.2" y1="19.8" x2="5.6" y2="18.4" /><line x1="18.4" y1="5.6" x2="19.8" y2="4.2" /></svg></span>
+      <span class="ts-icon ts-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg></span>
+      <span class="ts-knob" aria-hidden="true"></span>
+    </button></div>
+    <div class="modal-row"><span data-i18n="set.lang">Language</span><span class="mono text-[12px]" id="setLangName">Türkçe</span></div>
+    <p class="tech-tag mt-4" data-i18n="set.scan">SCANNING</p>
+    <div class="modal-row"><span data-i18n="set.maxsize">Maximum file size</span><span class="mono text-[12px]">256 MB</span></div>
+    <p class="tech-tag mt-4" data-i18n="set.detect">DETECTION</p>
+    <div class="modal-row"><span data-i18n="set.region">Region</span><span class="mono text-[12px]" id="setRegionName">ALL</span></div>
+    <p class="tech-tag mt-4" data-i18n="set.clean">CLEANING</p>
+    <div class="modal-row"><span data-i18n="set.defmode">Default cleaning mode</span><span class="mono text-[12px]" id="setModeName">mask</span></div>
+    <p class="tech-tag mt-4" data-i18n="set.priv">PRIVACY</p>
+    <div class="modal-row" style="border-bottom: none;"><span data-i18n="set.localst">Local processing status</span><span class="local-pill"><span class="status-dot"></span>LOCAL</span></div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+<script>
+(function () {
+  function T(k, v) { return window.NukeI18n ? window.NukeI18n.t(k, v) : k; }
+  function sync() {
+    var light = document.documentElement.classList.contains("light");
+    var st = document.getElementById("setThemeBtn");
+    if (st) st.setAttribute("data-mode", light ? "light" : "dark");
+    var sl = document.getElementById("setLangName");
+    if (sl) sl.textContent = (window.NukeI18n && window.NukeI18n.lang() === "en") ? "English" : "Türkçe";
+    try {
+      var d = JSON.parse(localStorage.getItem("nukepii_defaults") || "{}");
+      if (d.mode) document.getElementById("setModeName").textContent = d.mode;
+      if (d.region) document.getElementById("setRegionName").textContent = d.region;
+    } catch (e) {}
+  }
+  document.getElementById("setThemeBtn").addEventListener("click", function () {
+    var tt = document.getElementById("themeToggle");
+    if (tt) tt.click();
+    sync();
+  });
+  sync();
+})();
+</script>
+{% endblock %}

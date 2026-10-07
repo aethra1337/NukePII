@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nukepii"
+version = "0.4.0"
+description = "Zero-Trust PII detection, analysis & sanitization engine"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "polars>=1.0.0",
+    "pandas>=2.2.0",
+    "pyarrow>=15.0.0",
+    "Flask>=3.0.0",
+    "Werkzeug>=3.0.0",
+    "Jinja2>=3.1.0",
+    "waitress>=3.0.0",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "click>=8.1.0",
+]
+
+[project.optional-dependencies]
+ocr = ["pillow>=10.0.0", "pytesseract>=0.3.10"]
+ner = ["onnxruntime>=1.17.0", "tokenizers>=0.15.0"]
+report = ["weasyprint>=60.0"]
+formats = ["openpyxl>=3.1.0", "python-docx>=1.1.0", "pypdf>=4.0.0", "fastavro>=1.9.0"]
+crypto = ["pysha3>=1.0.2", "cryptography>=42.0.0", "pyyaml>=6.0.1"]
+
+[project.scripts]
+nukepii = "nukepii.cli.main:app"
+
+[tool.setuptools.packages.find]
+include = ["nukepii*"]
+
+[tool.setuptools.package-data]
+"nukepii.web" = ["templates/*.html", "static/css/*.css", "static/js/*.js",
+                 "static/js/vendor/*.js", "static/img/*"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typer's idiomatic `typer.Option(...)` defaults trip B008; intended.
+# Turkish CLI help text is intentional (RUF001 flags dotless i).
+"nukepii/cli/main.py" = ["B008", "RUF001"]
+# Turkish PDF/HTML report headings are intentional.
+"nukepii/web/report.py" = ["RUF001"]
+# Broad fallbacks are load-bearing: optional backends must never break a scan.
+# (SIM212's rewrite would also collapse the extension-allowlist branch.)
+"nukepii/core/streamer.py" = ["BLE001", "S110", "SIM212", "RUF001", "RUF002"]
+"nukepii/web/app.py" = ["BLE001", "SIM115", "SIM212", "RUF001", "RUF002"]
+# En-dashes/arrows in spec docstrings are deliberate typography.
+"nukepii/core/detectors.py" = ["BLE001", "RUF001", "RUF002"]

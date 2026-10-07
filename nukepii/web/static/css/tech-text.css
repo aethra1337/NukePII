@@ -1,0 +1,28 @@
+/* TechText hero wordmark — 2D canvas, inherits page font. */
+.tech-text {
+  position: relative;
+  width: 100%;
+  height: clamp(110px, 14vw, 170px);
+  margin-top: 8px;
+  touch-action: pan-y;
+  user-select: none;
+  font-family: var(--font-ui);
+}
+
+.tech-text-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

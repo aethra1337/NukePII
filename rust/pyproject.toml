@@ -1,0 +1,25 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "nukepii-native"
+version = "0.3.0"
+description = "NukePII native hot-path extension (Rust checksums + Aho-Corasick)"
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Rust",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+bindings = "pyo3"
+module-name = "nukepii._native"
+features = ["pyo3/extension-module"]
+manifest-path = "Cargo.toml"
+target-dir = "target"
+# Mixed rust/python: Python package lives in repo root `nukepii/`,
+# maturin only builds the `nukepii._native` extension wheel; the
+# resulting nukepii/_native.pyd is copied into the repo package.
+# NOTE: do NOT `pip install` the wheel (dist nukepii-native would clash
+# with the setuptools `nukepii` dist); copy the .pyd instead.

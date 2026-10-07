@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% set active = "export" %}
+{% block title_key %}meta.title.export{% endblock %}
+{% block content %}
+<div id="emptyState" class="card empty-drop p-10 mt-4 text-center hidden">
+  <h1 class="font-semibold text-[18px] mt-4" data-i18n="empty.t">Yüklenmiş rapor yok</h1>
+  <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="empty.d">Dosya seçtikten sonra tarama sonucu burada görünür.</p>
+  <p class="mt-4"><a href="/scan" class="btn btn-primary" data-i18n="empty.cta">Dosya tara</a></p>
+</div>
+
+<div id="exportGrid" class="hidden" style="display: none;">
+  <section class="pt-12 md:pt-16" aria-label="Export">
+    <div class="section-stamp">
+      <span class="no">05 / EXPORT</span>
+      <span class="tag">OUTPUT</span>
+    </div>
+    <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="ex.title">Take it with you.</h2>
+    <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="ex.sub">Clean file and audit report, generated locally.</p>
+    <div class="file-meta-grid mt-6" style="grid-template-columns: repeat(2, 1fr);">
+      <div><p class="k">INPUT</p><p class="v" id="exInput">—</p></div>
+      <div><p class="k">FINDINGS</p><p class="v" id="exFindings">—</p></div>
+      <div><p class="k">MODE</p><p class="v" id="exMode">—</p></div>
+      <div><p class="k">OUTPUT</p><p class="v" id="exOutput">—</p></div>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-6">
+      <button id="dlCleanBtn" type="button" class="btn btn-primary"><span data-i18n="ex.download">Temiz dosyayı indir</span><span aria-hidden="true"> →</span></button>
+      <button id="dlJsonBtn" type="button" class="btn" data-i18n="act.json">JSON raporu indir</button>
+      <button id="copySummaryBtn" type="button" class="btn" data-i18n="act.sumcopy">Özeti kopyala</button>
+    </div>
+    <p id="exportStatus" class="mono mt-3 text-[12px] hidden" style="color: var(--muted)" aria-live="polite"></p>
+    <p class="mono mt-4 text-[11px]" style="color: var(--faint)" data-i18n="ex.local">PROCESSING: LOCAL</p>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/guide.js') }}"></script>
+<script>
+(function () {
+  function T(k, v) { return window.NukeI18n ? window.NukeI18n.t(k, v) : k; }
+
+  var raw = null;
+  try { raw = sessionStorage.getItem("nukepii_scan"); } catch (e) {}
+  var emptyState = document.getElementById("emptyState");
+  var grid = document.getElementById("exportGrid");
+  if (!raw) { emptyState.classList.remove("hidden"); return; }
+  var report;
+  try { report = JSON.parse(raw); }
+  catch (e) { emptyState.classList.remove("hidden"); return; }
+  emptyState.classList.add("hidden");
+  grid.classList.remove("hidden");
+  grid.style.display = "block";
+
+  var params = {};
+  try { params = JSON.parse(sessionStorage.getItem("nukepii_params") || "{}"); } catch (e) {}
+  var mode = params.mode || report.mode || "mask";
+  var stem = report.filename.replace(/\.[^.]+$/, "");
+  var ext = (report.filename.split(".").pop() || "txt").toLowerCase();
+  document.getElementById("exInput").textContent = report.filename;
+  document.getElementById("exFindings").textContent = report.total_detections;
+  document.getElementById("exMode").textContent = mode.toUpperCase();
+  document.getElementById("exOutput").textContent = stem + ".nukepii." + ext;
+
+  function status(msg) {
+    var el = document.getElementById("exportStatus");
+    if (!msg) { el.classList.add("hidden"); return; }
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  function openStashed(cb) {
+    try {
+      var req = indexedDB.open("nukepii", 1);
+      req.onsuccess = function () {
+        var db = req.result;
+        var tx = db.transaction("files", "readonly");
+        var get = tx.objectStore("files").get("last-file");
+        get.onsuccess = function () { cb(get.result || null); db.close(); };
+        get.onerror = function () { cb(null); };
+      };
+      req.onerror = function () { cb(null); };
+    } catch (e) { cb(null); }
+  }
+
+  document.getElementById("dlCleanBtn").addEventListener("click", function () {
+    status(T("st.clean"));
+    openStashed(function (file) {
+      if (!file) { status(T("dl.gone")); return; }
+      var form = new FormData();
+      form.append("file", file);
+      form.append("mode", mode);
+      form.append("region", params.region || report.region || "ALL");
+      if (params.salt) form.append("salt", params.salt);
+      fetch("/api/clean", { method: "POST", body: form })
+        .then(function (res) {
+          if (!res.ok) {
+            return res.json().catch(function () { return {}; }).then(function (d) {
+              throw new Error(d.error || T("err.clean"));
+            });
+          }
+          return res.blob().then(function (blob) {
+            return { blob: blob, disposition: res.headers.get("Content-Disposition") || "" };
+          });
+        })
+        .then(function (out) {
+          var m = out.disposition.match(/filename="([^"]+)"/);
+          var url = URL.createObjectURL(out.blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = m ? m[1] : (stem + ".nukepii." + ext);
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          status(T("sum.clean"));
+        })
+        .catch(function (err) { status(err.message); });
+    });
+  });
+
+  document.getElementById("dlJsonBtn").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = report.filename + ".nukepii-report.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("copySummaryBtn").addEventListener("click", function () {
+    var text = T("sum.text", {
+      f: report.filename, n: report.total_detections,
+      s: report.risk_score, r: T("risk." + report.risk_label),
+      u: report.units, uk: T("unit." + report.unit_kind)
+    });
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+  });
+})();
+</script>
+{% endblock %}

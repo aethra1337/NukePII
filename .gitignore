@@ -1,0 +1,50 @@
+# NukePII .gitignore — local-first security tool hygiene.
+# Never commit scan targets, reports, bytecode, or secrets.
+
+# --- Python bytecode / caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Python packaging artifacts ---
+*.egg-info/
+*.egg
+dist/
+build/
+
+# --- Test / coverage artifacts ---
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- NukePII runtime artifacts ---
+# Sanitized exports, JSON reports, and files staged for scanning must
+# never be committed (they may contain or derive from real PII).
+*.nukepii.*
+*-report.json
+report.json
+nukepii-uploads/
+uploads/
+tmp/
+
+# --- Secrets ---
+# Local env files are never committed; .env.example stays tracked as a template.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*salt*.txt
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

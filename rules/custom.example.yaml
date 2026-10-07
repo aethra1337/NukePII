@@ -1,0 +1,17 @@
+# NukePII custom rules — Faz-1 regex-only MVP
+# Validate: nukepii rules --file rules/custom.example.yaml
+rules:
+  - id: ACME_EMP_ID
+    pattern: 'ACME-\d{6}'
+    confidence: 0.95
+    priority: 85
+    region: GLOBAL
+    compliance: [GDPR]
+    description: ACME employee badge
+  - id: INTERNAL_TICKET
+    pattern: 'TICKET-[A-Z]{2,4}-\d{4,}'
+    confidence: 0.6
+    priority: 40
+    region: GLOBAL
+    compliance: []
+    description: Internal ticket ref (low severity demo)

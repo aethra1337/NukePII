@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="meta.title.dash">NukePII raporu</title>
+  <script>
+    try {
+      var t = localStorage.getItem("nukepii_theme");
+      if (t === "light") {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
+      } else {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+      }
+      var l = localStorage.getItem("nukepii_lang");
+      document.documentElement.lang = (l === "en" || l === "tr") ? l : "tr";
+    } catch (e) {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: "class" };
+  </script>
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}" />
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}" />
+</head>
+<body class="min-h-screen">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="max-w-7xl mx-auto px-6 py-3 flex items-center gap-5">
+        <a href="/" class="flex items-center gap-2" data-i18n-aria="aria.home" aria-label="NukePII ana sayfa">
+          <img src="{{ url_for('static', filename='img/apple-touch-icon.png') }}" width="34" height="34" alt="" class="brand-mark" />
+          <span class="brand-name text-[18px]">nuke<span class="brand-pii">PII</span></span>
+        </a>
+        <nav class="hidden lg:flex items-center gap-5" aria-label="Sections">
+          <a href="/" class="nav-link">SCAN</a>
+          <a href="/dashboard" class="nav-link active">ANALYSIS</a>
+          <a href="#clean" class="nav-link">CLEAN</a>
+          <a href="#history" class="nav-link">HISTORY</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-2">
+          <span class="local-pill"><span class="status-dot"></span>LOCAL</span>
+          <button id="langToggle" type="button" class="lang-switch" role="switch" aria-checked="false" aria-label="Dili değiştir" data-cur="tr">
+            <span class="lang-opt" data-lang="tr">TR</span>
+            <span class="lang-opt" data-lang="en">EN</span>
+            <span class="lang-knob" aria-hidden="true"></span>
+          </button>
+          <button id="themeToggle" type="button" class="btn" aria-pressed="false" data-i18n-aria="aria.theme" aria-label="Renk temasını değiştir">Açık</button>
+        </div>
+      </div>
+      <div class="max-w-7xl mx-auto px-6 py-2 flex items-center gap-3 flex-wrap" style="border-top: 1px solid var(--line);">
+        <span id="fileMeta" class="text-[13px] truncate mono" style="color: var(--muted)">Dosya yüklenmedi</span>
+        <div class="ml-auto flex items-center gap-2 flex-wrap">
+          <span id="riskBadge" class="inline-flex items-center gap-2 text-[13px] font-medium px-3 py-1.5" style="border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);">
+            <span class="badge-dot" id="riskDot" style="background: var(--faint)"></span>
+            <span id="riskText">Risk yok</span>
+          </span>
+          <a href="/" class="btn" data-i18n="act.newscan">Yeni tarama</a>
+          <button id="settingsBtn" type="button" class="btn" data-i18n="set.open">Ayarlar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-6">
+    <div id="truncBanner" class="banner hidden" role="status"></div>
+
+    <div id="loadingState" class="card p-6 mt-4" aria-busy="true">
+      <div class="h-4 rounded w-1/3 animate-pulse" style="background: var(--surface-2)"></div>
+      <div class="h-4 rounded w-full mt-3 animate-pulse" style="background: var(--surface-2)"></div>
+      <div class="h-4 rounded w-2/3 mt-3 animate-pulse" style="background: var(--surface-2)"></div>
+    </div>
+
+    <div id="emptyState" class="card p-10 mt-4 text-center hidden">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" aria-hidden="true" style="margin: 0 auto;">
+        <circle cx="60" cy="60" r="52" stroke="var(--border-light)" stroke-width="1.5" />
+        <circle cx="60" cy="60" r="36" stroke="var(--border-light)" stroke-width="1.5" />
+        <circle cx="60" cy="60" r="20" stroke="var(--border-light)" stroke-width="1.5" />
+        <line x1="60" y1="4" x2="60" y2="116" stroke="var(--border)" stroke-width="1.5" />
+        <line x1="4" y1="60" x2="116" y2="60" stroke="var(--border)" stroke-width="1.5" />
+        <path d="M52 72V52" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+        <path d="M52 62C52 57 54.5 54.5 59 54.5s7 2.5 7 7.5v10" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" fill="none" />
+        <circle cx="86" cy="34" r="3" fill="var(--accent)" />
+      </svg>
+      <h1 class="font-semibold text-[18px] mt-4" data-i18n="empty.t">Yüklenmiş rapor yok</h1>
+      <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="empty.d">Dosya seçtikten sonra tarama sonucu burada görünür.</p>
+      <p class="mt-4"><a href="/" class="btn btn-primary" data-i18n="empty.cta">Dosya tara</a></p>
+    </div>
+
+    <div id="reportGrid" class="hidden mt-4" style="display: none;">
+      <div class="section-stamp">
+        <span class="no">03 / ANALYZE</span>
+        <span class="tag" data-i18n="an.tag">RESULTS</span>
+      </div>
+      <h2 class="font-semibold mt-5" style="font-size: clamp(30px, 4vw, 44px); letter-spacing: -0.02em;" data-i18n="an.title">What we found.</h2>
+      <section class="card flex flex-col md:flex-row mt-5" data-i18n-aria="sum.aria" aria-label="Özet">
+        <div class="kpi flex-1">
+          <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.risk">Risk skoru</p>
+          <p class="mt-1"><span id="kpiRiskScore" class="mono text-[26px] font-semibold">0</span><span class="text-[13px] ml-2" style="color: var(--muted)">/100</span></p>
+          <p id="kpiRiskLabel" class="text-[13px] mt-1" style="color: var(--muted)">Düşük</p>
+        </div>
+        <div class="kpi flex-1">
+          <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.det">Bulgu</p>
+          <p class="mt-1"><span id="kpiDetections" class="mono text-[26px] font-semibold">0</span></p>
+          <p id="kpiTypes" class="text-[13px] mt-1" style="color: var(--muted)">0 türde</p>
+        </div>
+        <div class="kpi flex-1">
+          <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.scan">Taranan</p>
+          <p class="mt-1"><span id="kpiUnits" class="mono text-[26px] font-semibold">0</span></p>
+          <p id="kpiUnitKind" class="text-[13px] mt-1" style="color: var(--muted)">satır</p>
+        </div>
+        <div class="kpi flex-1">
+          <p class="text-[13px]" style="color: var(--muted)" data-i18n="kpi.comp">Uyum</p>
+          <div class="mt-2 flex gap-4 flex-wrap text-[13px]">
+            <span><span class="mono font-medium">GDPR</span> <span id="kpiGdpr" class="mono">0</span></span>
+            <span><span class="mono font-medium">KVKK</span> <span id="kpiKvkk" class="mono">0</span></span>
+            <span><span class="mono font-medium">CCPA</span> <span id="kpiCcpa" class="mono">0</span></span>
+            <span><span class="mono font-medium">LGPD</span> <span id="kpiLgpd" class="mono">0</span></span>
+            <span><span class="mono font-medium">HIPAA</span> <span id="kpiHipaa" class="mono">0</span></span>
+          </div>
+          <p class="text-[12px] mt-2" style="color: var(--faint)" data-i18n="kpi.comp.note">Kurallar örtüştüğünde sayımlar paylaşılır.</p>
+        </div>
+      </section>
+
+      <section class="grid gap-4 md:grid-cols-5 mt-4" style="align-items: stretch;">
+        <div class="card p-5 md:col-span-2 flex flex-col">
+          <h2 class="tech-tag" data-i18n="g.t">Risk skoru</h2>
+          <div class="flex items-end gap-5 mt-3">
+            <div>
+              <p class="mono font-bold" style="font-size: 34px; line-height: 1;"><span id="gaugeValue">0</span><span style="font-size: 15px; color: var(--muted);">/100</span></p>
+              <p id="kpiRiskLabelInline" class="mono text-[12px] mt-1" style="color: var(--muted)">—</p>
+            </div>
+            <div class="gauge-wrap" style="height: 96px; width: 150px; margin-top: 0;">
+              <canvas id="gaugeChart" data-i18n-aria="g.t" aria-label="Risk skoru göstergesi"></canvas>
+            </div>
+          </div>
+          <div class="risk-bar mt-3" aria-hidden="true"><div id="riskBarFill" style="width: 0%; background: var(--success);"></div></div>
+          <p class="text-[13px] mt-2" style="color: var(--muted)" data-i18n="g.d">Bulgu türü ve dosya boyutuna göre ağırlıklandırılır.</p>
+        </div>
+        <div class="card p-5 md:col-span-3">
+          <h2 class="font-medium text-[15px]" data-i18n="d.t">Türe göre bulgular</h2>
+          <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="d.d">Her tür kendi etiketi ve sayısıyla gösterilir.</p>
+          <div class="flex flex-col sm:flex-row gap-4 mt-3 items-center">
+            <div class="donut-wrap">
+              <canvas id="donutChart" data-i18n-aria="d.t" aria-label="Türe göre bulgu grafiği"></canvas>
+            </div>
+            <ul id="donutLegend" class="legend-scroll flex-1 w-full text-[13px]"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="card p-5 mt-4" aria-label="Detections">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <h2 class="font-medium text-[15px]" data-i18n="dt.t">Detections</h2>
+          <span class="text-[13px]" style="color: var(--muted)" data-i18n="dt.sub">Type, matches, risk and action.</span>
+        </div>
+        <div class="diff-scroll mt-3">
+          <table class="heat-table" aria-label="Detections by type">
+            <thead>
+              <tr>
+                <th data-i18n="dt.h.type">Type</th>
+                <th style="text-align: right;" data-i18n="dt.h.matches">Matches</th>
+                <th data-i18n="dt.h.risk">Risk</th>
+                <th data-i18n="dt.h.action">Action</th>
+              </tr>
+            </thead>
+            <tbody id="detectBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-5 mt-4">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <h2 class="font-medium text-[15px]" data-i18n="h.t">Nerede bulundu</h2>
+          <span id="heatKind" class="text-[13px]" style="color: var(--muted)"></span>
+        </div>
+        <div class="diff-scroll mt-3">
+          <table class="heat-table" aria-label="Column findings">
+            <thead>
+              <tr>
+                <th data-i18n="h.col">Column</th>
+                <th style="text-align: right;" data-i18n="h.matches">Matches</th>
+                <th data-i18n="h.level">Seviye</th>
+                <th data-i18n="h.risk">Risk</th>
+              </tr>
+            </thead>
+            <tbody id="heatmap"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-5 mt-4">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div>
+            <h2 class="font-medium text-[15px]" data-i18n="p.t">Önizleme</h2>
+            <p class="text-[13px] mt-1" style="color: var(--muted)" data-i18n="p.d">Bulgulu ilk satırlar. Sol tarafta orijinal, sağda temizlenmiş.</p>
+          </div>
+          <button id="copyCleanBtn" type="button" class="btn ml-auto" data-i18n="act.copy">Temiz satırları kopyala</button>
+        </div>
+        <div id="diffViewer" class="mt-4" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        <div class="mt-4 flex flex-wrap gap-2 items-center">
+          <button id="downloadCleanBtn" type="button" class="btn btn-primary" data-i18n="act.clean">Temiz dosyayı indir</button>
+          <button id="downloadJsonBtn" type="button" class="btn" data-i18n="act.json">JSON raporu indir</button>
+          <button id="copySummaryBtn" type="button" class="btn" data-i18n="act.sumcopy">Özeti kopyala</button>
+        </div>
+        <div class="mt-4">
+          <p class="text-[12px] mt-2" style="color: var(--faint)" data-i18n="p.note">Aynı mod ve bölgeyle orijinal dosyada temizleme çalıştırır.</p>
+          <p class="sysline mono mt-1" data-i18n="kb.hint">Kısayollar: N yeni tarama, C temiz satırları kopyala, E JSON indir</p>
+        </div>
+      </section>
+
+      <section class="mt-10" id="clean" aria-label="Clean">
+        <div class="section-stamp">
+          <span class="no">04 / CLEAN</span>
+          <span class="tag" data-i18n="cl.tag">SANITIZATION WORKSPACE</span>
+        </div>
+        <h2 class="font-semibold mt-5" style="font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em;" data-i18n="cl.title">Make it safe.</h2>
+        <p class="mt-2 text-[14px]" style="color: var(--muted)" data-i18n="cl.sub">Choose how detected data should be transformed.</p>
+        <div class="grid gap-2 mt-5" id="modeRows" role="radiogroup" aria-label="Cleaning mode">
+          <button type="button" class="opt-row" data-mode="mask" role="radio" aria-checked="true"><span class="idx">01</span><span><span class="t">MASK</span><span class="d block" data-i18n="cl.m.mask">Preserve structure while hiding sensitive characters.</span></span></button>
+          <button type="button" class="opt-row" data-mode="hash" role="radio" aria-checked="false"><span class="idx">02</span><span><span class="t">HASH</span><span class="d block" data-i18n="cl.m.hash">Generate deterministic hashes for repeatable workflows.</span></span></button>
+          <button type="button" class="opt-row" data-mode="redact" role="radio" aria-checked="false"><span class="idx">03</span><span><span class="t">REDACT</span><span class="d block" data-i18n="cl.m.redact">Remove sensitive values entirely.</span></span></button>
+          <button type="button" class="opt-row" data-mode="pseudonymize" role="radio" aria-checked="false"><span class="idx">04</span><span><span class="t">PSEUDONYMIZE</span><span class="d block" data-i18n="cl.m.pseudo">Replace values with consistent pseudonyms.</span></span></button>
+          <button type="button" class="opt-row" data-mode="noise" role="radio" aria-checked="false"><span class="idx">05</span><span><span class="t">NOISE</span><span class="d block" data-i18n="cl.m.noise">Apply controlled noise to supported numeric data.</span></span></button>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4 mt-5">
+          <div>
+            <p class="tech-tag" data-i18n="cl.region">REGION</p>
+            <div class="seg mt-2" id="regionSeg" role="group" aria-label="Region">
+              <button type="button" data-region="ALL" aria-pressed="true">ALL</button>
+              <button type="button" data-region="TR" aria-pressed="false">TR</button>
+              <button type="button" data-region="PL" aria-pressed="false">PL</button>
+              <button type="button" data-region="US" aria-pressed="false">US</button>
+              <button type="button" data-region="ES" aria-pressed="false">ES</button>
+              <button type="button" data-region="EU" aria-pressed="false">EU</button>
+              <button type="button" data-region="GB" aria-pressed="false">GB</button>
+              <button type="button" data-region="FR" aria-pressed="false">FR</button>
+              <button type="button" data-region="DE" aria-pressed="false">DE</button>
+              <button type="button" data-region="IT" aria-pressed="false">IT</button>
+              <button type="button" data-region="BR" aria-pressed="false">BR</button>
+              <button type="button" data-region="IN" aria-pressed="false">IN</button>
+              <button type="button" data-region="AU" aria-pressed="false">AU</button>
+              <button type="button" data-region="CA" aria-pressed="false">CA</button>
+              <button type="button" data-region="CN" aria-pressed="false">CN</button>
+              <button type="button" data-region="KR" aria-pressed="false">KR</button>
+              <button type="button" data-region="SG" aria-pressed="false">SG</button>
+              <button type="button" data-region="IL" aria-pressed="false">IL</button>
+              <button type="button" data-region="ZA" aria-pressed="false">ZA</button>
+              <button type="button" data-region="TH" aria-pressed="false">TH</button>
+              <button type="button" data-region="TW" aria-pressed="false">TW</button>
+              <button type="button" data-region="HK" aria-pressed="false">HK</button>
+              <button type="button" data-region="JP" aria-pressed="false">JP</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="saltField"><span data-i18n="cl.salt">SALT</span> <span style="color: var(--faint)" data-i18n="cl.optional">Optional</span></label>
+            <input id="saltField" type="text" autocomplete="off" spellcheck="false" placeholder="Enter salt" data-i18n="cl.salt.ph" />
+            <p class="text-[12px] mt-2" style="color: var(--faint)" data-i18n="cl.salt.d">Reuse the same salt when deterministic output is required across scans.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-10" id="export" aria-label="Export">
+        <div class="section-stamp">
+          <span class="no">05 / EXPORT</span>
+          <span class="tag">OUTPUT</span>
+        </div>
+        <div class="file-meta-grid mt-4" style="grid-template-columns: repeat(2, 1fr);">
+          <div><p class="k">INPUT</p><p class="v" id="exInput">—</p></div>
+          <div><p class="k">FINDINGS</p><p class="v" id="exFindings">—</p></div>
+          <div><p class="k">MODE</p><p class="v" id="exMode">—</p></div>
+          <div><p class="k">OUTPUT</p><p class="v" id="exOutput">—</p></div>
+        </div>
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button id="generateBtn" type="button" class="btn btn-primary"><span data-i18n="ex.generate">Generate clean file</span><span aria-hidden="true"> →</span></button>
+        </div>
+        <div id="exportReady" class="hidden mt-4 card p-4">
+          <p class="font-medium text-[14px]" data-i18n="ex.ready">Clean file ready</p>
+          <p class="mono text-[12px] mt-1" style="color: var(--muted)" id="exReadySub"></p>
+          <p class="mono text-[11px] mt-1" style="color: var(--faint)" data-i18n="ex.local">PROCESSING: LOCAL</p>
+          <button id="exportDownloadBtn" type="button" class="btn btn-primary mt-3" data-i18n="ex.download">Download clean file</button>
+        </div>
+      </section>
+
+      <section class="mt-10" id="history" aria-label="History">
+        <div class="section-stamp">
+          <span class="no">HISTORY</span>
+          <span class="tag" data-i18n="hi.tag">LOCAL SCAN LOG</span>
+        </div>
+        <div class="diff-scroll mt-4">
+          <table class="heat-table" aria-label="Scan history">
+            <thead>
+              <tr>
+                <th data-i18n="hi.date">Date</th>
+                <th data-i18n="hi.file">File</th>
+                <th style="text-align: right;" data-i18n="hi.findings">Findings</th>
+                <th data-i18n="hi.risk">Risk</th>
+                <th data-i18n="hi.output">Output</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+        <p id="historyEmpty" class="mono text-[12px] mt-3 hidden" style="color: var(--faint)" data-i18n="hi.empty">No scans yet. Select a file to begin a local scan.</p>
+      </section>
+    </div>
+
+    <div id="settingsModal" class="modal-back hidden" role="dialog" aria-modal="true" aria-label="Settings">
+      <div class="modal-box p-5 md:p-6">
+        <div class="flex items-center gap-3">
+          <h2 class="font-semibold text-[17px]" data-i18n="set.title">Settings</h2>
+          <button id="settingsClose" type="button" class="btn ml-auto" data-i18n="set.close">Close</button>
+        </div>
+        <div class="mt-2">
+          <p class="tech-tag" data-i18n="set.general">GENERAL</p>
+          <div class="modal-row"><span data-i18n="set.theme">Theme</span><button id="setThemeBtn" type="button" class="btn">Açık</button></div>
+          <div class="modal-row"><span data-i18n="set.lang">Language</span><span class="mono text-[12px]" id="setLangName">Türkçe</span></div>
+          <p class="tech-tag mt-4" data-i18n="set.scan">SCANNING</p>
+          <div class="modal-row"><span data-i18n="set.maxsize">Maximum file size</span><span class="mono text-[12px]">256 MB</span></div>
+          <p class="tech-tag mt-4" data-i18n="set.detect">DETECTION</p>
+          <div class="modal-row"><span data-i18n="set.region">Region</span><span class="mono text-[12px]" id="setRegionName">ALL</span></div>
+          <p class="tech-tag mt-4" data-i18n="set.clean">CLEANING</p>
+          <div class="modal-row"><span data-i18n="set.defmode">Default cleaning mode</span><span class="mono text-[12px]" id="setModeName">mask</span></div>
+          <p class="tech-tag mt-4" data-i18n="set.priv">PRIVACY</p>
+          <div class="modal-row"><span data-i18n="set.localst">Local processing status</span><span class="local-pill"><span class="status-dot"></span>LOCAL</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-8" style="border-top: 1px solid var(--line)">
+    <p class="max-w-7xl mx-auto px-6 py-5 text-[12px] mono" style="color: var(--faint)" data-i18n="foot.dash" data-v-version="{{ version }}">NukePII v{{ version }} · Rapor bu tarayıcıda kalır</p>
+  </footer>
+
+  <div id="toastWrap" aria-live="polite"></div>
+  <script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

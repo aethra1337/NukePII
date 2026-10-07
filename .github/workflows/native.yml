@@ -1,0 +1,50 @@
+name: native (maturin Rust extension)
+
+on:
+  push:
+    paths: ["rust/**", ".github/workflows/native.yml"]
+  pull_request:
+    paths: ["rust/**"]
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        python: ["3.12", "3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install deps
+        run: |
+          python -m pip install -U pip maturin
+          pip install -e .
+      - name: Build native wheel
+        working-directory: rust
+        run: maturin build --release --out ../dist
+      - name: Extract _native.pyd/.so into repo package (no wheel install)
+        shell: python
+        run: |
+          import glob, zipfile
+          w = sorted(glob.glob("dist/*.whl"))[-1]
+          z = zipfile.ZipFile(w)
+          names = [n for n in z.namelist() if n.endswith(("_native.pyd", "_native.so", "_native.dylib"))]
+          assert names, z.namelist()[:10]
+          z.extract(names[0], "nativetmp")
+          import os, shutil
+          src = os.path.join("nativetmp", names[0])
+          dst = os.path.join("nukepii", os.path.basename(names[0]))
+          shutil.copy(src, dst)
+          print("installed", dst)
+      - name: Cross-check Python == Rust semantics (inline, no test suite)
+        run: python -c "from nukepii.core.detectors import is_valid_luhn, is_valid_tr_national_id, is_valid_iban, capabilities; assert is_valid_luhn('4539148803436467'); assert is_valid_tr_national_id('10000000146'); assert is_valid_iban('DE89370400440532013000'); print(capabilities())"
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}-py${{ matrix.python }}
+          path: dist/*.whl

@@ -1,0 +1,25 @@
+# NukePII — production dependencies
+# Python 3.12+
+
+# --- Data processing (chunk-based streaming pipeline) ---
+polars>=1.0.0        # Lazy evaluation + streaming for 1GB+ files
+pandas>=2.2.0        # Fallback chunking (read_csv chunksize) where needed
+pyarrow>=15.0.0      # Fast columnar IO backend for Polars/Pandas
+
+# --- Web UI (Flask dashboard + API) ---
+Flask>=3.0.0
+Werkzeug>=3.0.0
+Jinja2>=3.1.0
+waitress>=3.0.0       # Production WSGI server (single process + threads,
+                      # keeps in-memory /api/v1 jobs working; dev uses Flask)
+
+# --- CLI ---
+typer>=0.12.0        # Primary CLI framework (nukepii scan / nukepii clean)
+rich>=13.7.0         # Pretty terminal tables / progress bars for CLI
+click>=8.1.0         # Transitive dep of Typer/Flask (pinned explicitly)
+
+# --- Visualization is client-side (Chart.js / TailwindCSS via CDN),
+# --- so no Python plotting dependency is required for the core engine.
+
+# --- Quality ---
+# ruff>=0.8.0            # install separately for linting

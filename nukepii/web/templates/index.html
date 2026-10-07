@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% set active = "scan" %}
+{% block title_key %}meta.title.index{% endblock %}
+{% block content %}
+    <!-- 01 / SCAN -->
+    <section class="pt-12 md:pt-16" aria-label="Scan">
+      <div class="section-stamp">
+        <span class="no">01 / SCAN</span>
+        <span class="tag" data-i18n="nav.localfirst">LOCAL-FIRST PII SCANNER</span>
+      </div>
+      <div class="grid gap-10 md:grid-cols-12 mt-8 items-start">
+        <div class="md:col-span-6">
+          <h1 class="sr-only" data-i18n="hero.title">Find PII before someone else does.</h1>
+          <div id="techTextHero" class="tech-text" data-i18n-key="hero.title" role="img" aria-label="Find PII before someone else does."><canvas class="tech-text-canvas"></canvas></div>
+          <p class="mt-5 text-[15px] leading-relaxed" style="color: var(--muted); max-width: 44ch;" data-i18n="hero.desc">Scan sensitive files directly on this machine. Detect, inspect and sanitize personally identifiable information without uploading your data.</p>
+          <p class="mono mt-6 text-[12px]" style="color: var(--faint)">CSV · JSON · JSONL · SQL · LOG · TXT</p>
+        </div>
+        <div class="md:col-span-6">
+          <figure class="forensic-fig p-2" id="scanFieldFig" aria-label="Etkileşimli tarama alanı">
+            <div class="scanfield" id="scanField">
+              <canvas class="scanfield-canvas" width="520" height="340" aria-hidden="true"></canvas>
+              <button type="button" class="sf-dot" style="left:57.7%;top:21.2%" data-sig="EMAIL" aria-label="EMAIL sinyali"><span aria-hidden="true"></span></button>
+              <button type="button" class="sf-dot" style="left:69.2%;top:47.6%" data-sig="TR_ID" aria-label="TR_ID sinyali"><span aria-hidden="true"></span></button>
+              <button type="button" class="sf-dot" style="left:57.7%;top:77.1%" data-sig="IBAN" aria-label="IBAN sinyali"><span aria-hidden="true"></span></button>
+              <button type="button" class="sf-dot" style="left:23.1%;top:84.7%" data-sig="PHONE" aria-label="PHONE sinyali"><span aria-hidden="true"></span></button>
+              <button type="button" class="sf-dot" style="left:80.8%;top:84.7%" data-sig="API_KEY" aria-label="API_KEY sinyali"><span aria-hidden="true"></span></button>
+              <div class="scanfield-tip hidden" id="scanFieldTip" role="status"></div>
+              <noscript>
+                <svg viewBox="0 0 520 340" width="100%" role="img" aria-label="Forensic scan diagram">
+                  <g stroke="var(--border-light)" stroke-width="1">
+                    <line x1="0" y1="85" x2="520" y2="85" />
+                    <line x1="0" y1="170" x2="520" y2="170" />
+                    <line x1="0" y1="255" x2="520" y2="255" />
+                    <line x1="130" y1="0" x2="130" y2="340" />
+                    <line x1="260" y1="0" x2="260" y2="340" />
+                    <line x1="390" y1="0" x2="390" y2="340" />
+                  </g>
+                  <g fill="none" stroke="var(--text-muted)" stroke-width="1.2">
+                    <circle cx="150" cy="150" r="72" />
+                    <circle cx="150" cy="150" r="46" />
+                    <circle cx="150" cy="150" r="20" />
+                    <line x1="150" y1="66" x2="150" y2="234" />
+                    <line x1="66" y1="150" x2="234" y2="150" />
+                  </g>
+                  <path d="M40 300 C 140 290, 220 220, 330 200 S 470 170, 492 120" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4" />
+                  <g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">
+                    <text x="18" y="30">FILE_01</text>
+                    <text x="18" y="48">COLUMN_17</text>
+                    <text x="300" y="60">EMAIL</text>
+                    <text x="360" y="150">TR_ID</text>
+                    <text x="300" y="250">IBAN</text>
+                    <text x="120" y="300">PHONE</text>
+                    <text x="420" y="300">API_KEY</text>
+                  </g>
+                  <g fill="var(--accent)">
+                    <circle cx="300" cy="72" r="3" />
+                    <circle cx="360" cy="162" r="3" />
+                    <circle cx="300" cy="262" r="3" />
+                    <circle cx="120" cy="288" r="3" />
+                    <circle cx="420" cy="288" r="3" />
+                  </g>
+                </svg>
+              </noscript>
+            </div>
+            <div class="scanfield-foot">
+              <p class="mono scanfield-readout" id="scanFieldReadout" aria-live="polite"><span id="sfCoords">x:0420 y:0117</span><span class="scanfield-sep" aria-hidden="true"> · </span><span id="sfStatus" data-i18n="scanfield.hint">Alanın üzerinde gez — sinyale tıkla</span></p>
+              <button type="button" class="btn btn-primary scanfield-demo" id="scanFieldDemo"><span data-i18n="scanfield.demo">Demo tara</span></button>
+            </div>
+          </figure>
+          <p class="mono mt-2 text-[11px] flex justify-between" style="color: var(--faint)"><span>FIG. 01 — SCAN FIELD</span><span>SCALE 1:1</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upload / file states -->
+    <section class="mt-10" aria-label="File">
+      <div id="dropzone" tabindex="0" role="button" data-i18n-aria="dz.aria" aria-label="Taranacak dosyayı seç. Kabul edilen biçimler: CSV, JSON, JSONL, SQL, LOG, TXT." class="p-10 md:p-14 text-center">
+        <p class="tech-tag" data-i18n="dz.title">Drop file here</p>
+        <p class="mt-3 text-[14px]" style="color: var(--muted)"><span data-i18n="dz.or">or</span> <span class="underline" data-i18n="dz.select">select file</span></p>
+        <p class="mono mt-4 text-[12px]" style="color: var(--faint)">CSV · JSON · JSONL · SQL · LOG · TXT</p>
+        <p class="mono mt-1 text-[12px]" style="color: var(--faint)"><span data-i18n="dz.max">MAX 256 MB</span> · <span data-i18n="dz.local">LOCAL ONLY</span></p>
+        <p id="fileLabel" class="mono mt-4 text-[12px] truncate" style="color: var(--faint)">Dosya seçilmedi</p>
+        <input id="fileInput" type="file" class="hidden" accept=".csv,.json,.jsonl,.sql,.log,.txt" />
+      </div>
+
+      <div id="filePanel" class="hidden mt-4 card p-5 md:p-6">
+        <div class="section-stamp" style="border-top: none; padding-top: 0;">
+          <span class="no">FILE</span>
+          <span class="tag" data-i18n="fp.ready">READY TO SCAN</span>
+        </div>
+        <div class="file-meta-grid mt-4">
+          <div><p class="k">FILE</p><p class="v" id="fpName">—</p></div>
+          <div><p class="k">SIZE</p><p class="v" id="fpSize">—</p></div>
+          <div><p class="k">FORMAT</p><p class="v" id="fpFormat">—</p></div>
+          <div><p class="k">ROWS</p><p class="v" id="fpRows">—</p></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+          <div class="field">
+            <label for="modeSelect" data-i18n="field.mode">Mod</label>
+            <select id="modeSelect">
+              <option value="mask" selected>mask</option>
+              <option value="hash">hash</option>
+              <option value="redact">redact</option>
+              <option value="pseudonymize">pseudonymize</option>
+              <option value="noise">noise</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="regionSelect" data-i18n="field.region">Bölge</label>
+            <select id="regionSelect">
+              <option value="ALL" selected>ALL</option>
+              <option value="TR">TR</option>
+              <option value="PL">PL</option>
+              <option value="US">US</option>
+              <option value="ES">ES</option>
+              <option value="EU">EU</option>
+              <option value="GB">GB</option>
+              <option value="FR">FR</option>
+              <option value="DE">DE</option>
+              <option value="IT">IT</option>
+              <option value="BR">BR</option>
+              <option value="IN">IN</option>
+              <option value="AU">AU</option>
+              <option value="CA">CA</option>
+              <option value="CN">CN</option>
+              <option value="KR">KR</option>
+              <option value="SG">SG</option>
+              <option value="IL">IL</option>
+              <option value="ZA">ZA</option>
+              <option value="TH">TH</option>
+              <option value="TW">TW</option>
+              <option value="HK">HK</option>
+              <option value="JP">JP</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="saltInput" data-i18n="field.salt">Salt (isteğe bağlı)</label>
+            <input id="saltInput" type="text" autocomplete="off" spellcheck="false" placeholder="Otomatik üretilir" data-i18n="field.salt.ph" />
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button id="scanBtn" type="button" class="btn btn-primary" disabled><span data-i18n="act.scan">Dosyayı tara</span><span aria-hidden="true"> →</span></button>
+          <button id="changeFileBtn" type="button" class="btn" data-i18n="fp.change">Change file</button>
+          <button id="cleanBtn" type="button" class="btn" disabled data-i18n="act.clean">Temiz dosyayı indir</button>
+        </div>
+        <div class="progress mt-4" aria-hidden="true"><div id="scanProgress"></div></div>
+        <p id="busyLabel" class="hidden mt-2 text-[12px] mono" style="color: var(--muted)" aria-live="polite" data-i18n="busy">Taranıyor…</p>
+        <p class="mono mt-3 text-[11px]" style="color: var(--faint)" data-i18n="fp.local">100% LOCAL PROCESSING</p>
+        <p class="sysline mono mt-2" data-i18n="kb.scan">Kısayol: S ile tara</p>
+        <div id="errorBox" class="hidden mt-3 text-[13px] mono" role="alert"></div>
+        <div id="scanSummary" class="hidden mt-3 text-[13px] mono" aria-live="polite"></div>
+      </div>
+
+      <div id="scanPanel" class="hidden mt-4 card p-5 md:p-6" aria-live="polite">
+        <div class="flex items-baseline gap-3">
+          <span class="no mono text-[12px]" style="color: var(--accent)">02 / DETECT</span>
+          <span class="tech-tag" data-i18n="sp.engine">DETECTION ENGINE / ACTIVE</span>
+        </div>
+        <div class="scan-readout mt-4">
+          <p><span class="k">SCANNING FILE</span><span class="v" id="spFile">—</span></p>
+          <p><span class="k" data-i18n="sp.upload">UPLOAD</span><span class="v" id="spUpload">0%</span></p>
+          <p><span class="k" data-i18n="sp.elapsed">ELAPSED</span><span class="v" id="spElapsed">0.0s</span></p>
+          <p><span class="k" data-i18n="sp.rows">ROWS COUNTED</span><span class="v" id="spRows">—</span></p>
+        </div>
+        <p class="blockbar mt-3" id="spBar" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</p>
+        <p class="tech-tag mt-4" data-i18n="sp.detectors">ACTIVE DETECTORS</p>
+        <div class="flex flex-wrap gap-2 mt-2" aria-hidden="true">
+          <span class="type-badge">EMAIL</span>
+          <span class="type-badge">TR_ID</span>
+          <span class="type-badge">PHONE</span>
+          <span class="type-badge">IBAN</span>
+          <span class="type-badge">CARD</span>
+          <span class="type-badge">JWT</span>
+          <span class="type-badge">API_KEY</span>
+          <span class="type-badge">IPV4</span>
+          <span class="type-badge">IPV6</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detectors -->
+    <section class="mt-16" aria-label="Detectors">
+      <div class="section-stamp">
+        <span class="no">02 / DETECT</span>
+        <span class="tag" data-i18n="det.tag">DETECTION SURFACE</span>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-6" id="detGrid"></div>
+      <p class="mono mt-4 text-[12px]" style="color: var(--faint)" data-i18n="det.note">Regex candidates confirmed by checksum validators. No data leaves the machine.</p>
+    </section>
+
+    <!-- Privacy -->
+    <section class="mt-16" aria-label="Privacy">
+      <div class="section-stamp">
+        <span class="no">03 / LOCAL</span>
+        <span class="tag" data-i18n="pr.tag">PRIVACY BY DESIGN</span>
+      </div>
+      <h2 class="font-semibold mt-6" style="font-size: clamp(30px, 4vw, 46px); line-height: 1.05; letter-spacing: -0.03em;" data-i18n="pr.title">Your data stays here.</h2>
+      <p class="mt-4 text-[15px] leading-relaxed" style="color: var(--muted); max-width: 52ch;" data-i18n="pr.desc">NukePII processes files locally. No file is uploaded to an external server.</p>
+      <div class="grid md:grid-cols-2 gap-10 mt-8">
+        <div class="pipe" aria-label="Pipeline">
+          <p><span class="node">FILE</span></p>
+          <p class="arr">↓</p>
+          <p><span class="node">LOCAL SCANNER</span></p>
+          <p class="arr">↓</p>
+          <p><span class="node">DETECTORS</span></p>
+          <p class="arr">↓</p>
+          <p><span class="node">ANALYSIS</span></p>
+          <p class="arr">↓</p>
+          <p><span class="node">SANITIZER</span></p>
+          <p class="arr">↓</p>
+          <p><span class="node" style="color: var(--accent);">CLEAN FILE</span></p>
+        </div>
+        <div>
+          <h3 class="font-medium text-[16px]" data-i18n="pr.comp.t">Compliance support</h3>
+          <p class="mt-2 text-[14px] leading-relaxed" style="color: var(--muted)" data-i18n="pr.comp.d">Helps identify potentially sensitive information to support privacy and compliance workflows.</p>
+          <div class="flex gap-2 mt-4">
+            <span class="type-badge">GDPR</span>
+            <span class="type-badge">KVKK</span>
+          </div>
+          <div class="grid grid-cols-3 gap-px mt-8" style="background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden;">
+            <div style="background: var(--surface); padding: 14px;"><p class="mono text-[20px] font-semibold">100%</p><p class="tech-tag mt-1">LOCAL</p></div>
+            <div style="background: var(--surface); padding: 14px;"><p class="mono text-[20px] font-semibold">80</p><p class="tech-tag mt-1">DETECTORS</p></div>
+            <div style="background: var(--surface); padding: 14px;"><p class="mono text-[20px] font-semibold">5</p><p class="tech-tag mt-1">CLEAN MODES</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scan-field.js') }}?v=1"></script>
+<script type="module" src="{{ url_for('static', filename='js/hero-text.js') }}?v=1"></script>
+{% endblock %}
