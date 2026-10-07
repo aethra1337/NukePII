@@ -18,7 +18,9 @@ jobs:
           pip install -r requirements.txt
           pip install "ruff>=0.8.0"
       - name: Lint (ruff)
-        run: ruff check nukepii
+        run: ruff check nukepii scripts
+      - name: Smoke test (no fixtures, stdlib only)
+        run: python scripts/smoke.py
       - name: OpenAPI contract check
         run: |
           python -m nukepii.cli.main openapi --out /tmp/openapi.json

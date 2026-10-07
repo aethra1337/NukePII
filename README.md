@@ -192,6 +192,7 @@ to your reverse proxy's body limit.
 
 ```bash
 make lint        # ruff check
+make smoke       # stdlib-only smoke test (no fixtures)
 make run         # Flask dev server on http://127.0.0.1:5000
 make openapi     # export spec to openapi/openapi.json
 docker build -t nukepii .          # or: docker compose up
