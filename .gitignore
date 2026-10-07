@@ -30,6 +30,7 @@ env/
 *.nukepii.*
 *-report.json
 report.json
+nukepii_vault.db
 nukepii-uploads/
 uploads/
 tmp/
